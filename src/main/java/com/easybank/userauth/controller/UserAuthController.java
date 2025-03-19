@@ -86,15 +86,7 @@ public class UserAuthController {
             responseCode = "401",
             description = "Unauthorized - Invalid credentials",
             content = @Content(
-                    mediaType = "application/json",
-                    examples = @ExampleObject(
-                            name = "Invalid Credentials",
-                            value = """
-                {
-                    "error": "Invalid username or password"
-                }
-                """
-                    )
+                    schema = @Schema(implementation = ErrorResponseDto.class)
             )
     )
     @PostMapping("/login")

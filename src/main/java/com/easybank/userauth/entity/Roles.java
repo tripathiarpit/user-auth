@@ -15,9 +15,8 @@ import java.util.*;
 public class Roles {
 
     @Id
-    @GeneratedValue
     @Column(name = "id", columnDefinition = "CHAR(36)")
-    private UUID id;
+    private String id;  // Using String instead of UUID
 
     @Column(name = "role_name", unique = true, nullable = false, length = 50)
     private String roleName;

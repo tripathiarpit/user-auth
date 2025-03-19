@@ -19,7 +19,7 @@ public class User extends BaseEntity{
     private Long id;
 
     @Column(name = "customer_id")
-    @JoinColumn(name = "customer_id", referencedColumnName = "id")
+    @JoinColumn(name = "customer_id")
     private Long customerId;
 
     @Column(name = "username",unique = true)

@@ -1,50 +1,70 @@
-CREATE TABLE users (
-                       id BIGINT PRIMARY KEY AUTO_INCREMENT,
-                       customer_id BIGINT NOT NULL,
-                       FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE,
-                       username VARCHAR(50) UNIQUE NOT NULL,
-                       email VARCHAR(100) UNIQUE NOT NULL,
-                       password_hash VARCHAR(255) NOT NULL,
-                       is_active BOOLEAN DEFAULT TRUE,
-                       created_at TIMESTAMP DEFAULT NOW(),
-                       updated_at TIMESTAMP DEFAULT NOW()
+-- Users table
+CREATE TABLE IF NOT EXISTS users (
+                                     id CHAR(36) PRIMARY KEY,
+                                     customer_id BIGINT NOT NULL,
+                                     username VARCHAR(50) UNIQUE NOT NULL,
+                                     email VARCHAR(100) UNIQUE NOT NULL,
+                                     password_hash VARCHAR(255) NOT NULL,
+                                     is_active TINYINT(1) DEFAULT 1, -- MySQL does not have BOOLEAN, so we use TINYINT(1)
+                                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-CREATE TABLE roles (
-                       id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
-                       role_name VARCHAR(50) UNIQUE NOT NULL
+-- Roles table
+CREATE TABLE IF NOT EXISTS roles (
+                                     id CHAR(36) PRIMARY KEY,
+                                     role_name VARCHAR(50) UNIQUE NOT NULL,
+                                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-CREATE TABLE user_roles (
-                            user_id CHAR(36) REFERENCES users(id) ON DELETE CASCADE,
-                            role_id CHAR(36) REFERENCES roles(id) ON DELETE CASCADE,
-                            PRIMARY KEY (user_id, role_id)
+-- User roles mapping table
+CREATE TABLE IF NOT EXISTS user_roles (
+                                          user_id CHAR(36) NOT NULL,
+                                          role_id CHAR(36) NOT NULL,
+                                          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                          PRIMARY KEY (user_id, role_id),
+                                          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                                          FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
 );
 
-CREATE TABLE permissions (
-                             id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
-                             permission_name VARCHAR(50) UNIQUE NOT NULL
+-- Permissions table
+CREATE TABLE IF NOT EXISTS permissions (
+                                           id CHAR(36) PRIMARY KEY,
+                                           permission_name VARCHAR(50) UNIQUE NOT NULL,
+                                           description TEXT,
+                                           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-CREATE TABLE role_permissions (
-                                  role_id CHAR(36) REFERENCES roles(id) ON DELETE CASCADE,
-                                  permission_id CHAR(36) REFERENCES permissions(id) ON DELETE CASCADE,
-                                  PRIMARY KEY (role_id, permission_id)
+-- Role permissions mapping table
+CREATE TABLE IF NOT EXISTS role_permissions (
+                                                role_id CHAR(36) NOT NULL,
+                                                permission_id CHAR(36) NOT NULL,
+                                                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                                PRIMARY KEY (role_id, permission_id),
+                                                FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE,
+                                                FOREIGN KEY (permission_id) REFERENCES permissions(id) ON DELETE CASCADE
 );
 
-CREATE TABLE user_sessions (
-                               id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
-                               user_id CHAR(36) REFERENCES users(id) ON DELETE CASCADE,
-                               session_token VARCHAR(255) UNIQUE NOT NULL,
-                               ip_address VARCHAR(45),
-                               user_agent TEXT,
-                               created_at TIMESTAMP DEFAULT NOW(),
-                               expires_at TIMESTAMP NOT NULL
+-- User sessions table
+CREATE TABLE IF NOT EXISTS user_sessions (
+                                             id CHAR(36) PRIMARY KEY,
+                                             user_id CHAR(36) NOT NULL,
+                                             session_token VARCHAR(255) UNIQUE NOT NULL,
+                                             ip_address VARCHAR(45),
+                                             user_agent TEXT,
+                                             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                             expires_at TIMESTAMP NOT NULL,
+                                             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
-CREATE TABLE audit_logs (
-                            id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
-                            user_id CHAR(36) REFERENCES users(id) ON DELETE SET NULL,
-                            action VARCHAR(100) NOT NULL,
-                            timestamp TIMESTAMP DEFAULT NOW(),
-                            details TEXT
+
+-- Audit logs table
+CREATE TABLE IF NOT EXISTS audit_logs (
+                                          id CHAR(36) PRIMARY KEY,
+                                          user_id CHAR(36),
+                                          action VARCHAR(100) NOT NULL,
+                                          timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                          details TEXT,
+                                          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );

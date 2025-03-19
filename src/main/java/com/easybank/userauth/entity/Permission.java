@@ -14,9 +14,8 @@ import java.util.*;
 public class Permission {
 
     @Id
-    @GeneratedValue
     @Column(name = "id", columnDefinition = "CHAR(36)")
-    private UUID id;
+    private String id;
 
     @Column(name = "permission_name", unique = true, nullable = false, length = 50)
     private String permissionName;
